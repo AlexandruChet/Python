@@ -1,16 +1,21 @@
 import time
 from pathlib import Path
 import datetime
+import difflib
 
 file = Path("text.txt")
 
-print("Watching for changes")
+def read_content(e):
+    return e.read_text(encoding='utf-8').splitlines() if e.exists() else []
+
+print(f"Watching for changes in {file}...")
 
 try:
     last_modified = file.stat().st_mtime
+    old_content = read_content(file)
 
     while True:
-        time.sleep(1)
+        time.sleep(0.5)
 
         if not file.exists():
             print("File deleted!")
@@ -18,11 +23,20 @@ try:
 
         current = file.stat().st_mtime
         if current != last_modified:
-            last_modified = current
-            print("File changed")
+            new_content = read_content(file)
             
-            modification_time = datetime.datetime.fromtimestamp(current)
-            print(f"Last modified time: {modification_time}")
+            diff = difflib.ndiff(old_content, new_content)
+            
+            print(f"\nChange detected: {datetime.datetime.fromtimestamp(current)}")
+            
+            changes = [line for line in diff if line.startswith('+ ') or line.startswith('- ')]
+            if changes:
+                print("\n".join(changes))
+            else:
+                print("Metadata changes or empty change")
+
+            last_modified = current
+            old_content = new_content
 
 except KeyboardInterrupt:
     print("\nWatcher stopped")
