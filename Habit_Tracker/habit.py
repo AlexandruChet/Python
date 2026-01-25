@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 import json
 import uuid
+from cryptography.fernet import Fernet
 
 
 class TrackerStructure(ABC):
@@ -37,14 +38,23 @@ class Tracker(TrackerStructure):
         now = datetime.now()
         self.target_date = datetime(now.year, now.month, day, hour, minute)
 
-    def is_time_to_work(self):
-        if self.target_date is None:
-            return False
+    @staticmethod
+    def check_deadlines(filename="habits.json"):
+        try:
+            with open(filename, "r", encoding="utf-8") as f:
+                habits = json.load(f)
 
-        if datetime.now() >= self.target_date and not self.done:
-            print(f"Reminder: It's time to work on '{self.title}'!")
-            return True
-        return False
+            now = datetime.now()
+
+            for h in habits:
+                if not h["done"] and h["target_date"]:
+                        deadline = datetime.strptime(h["target_date"], "%Y-%m-%d %H:%M")
+                if now >= deadline:
+                        print(f"⏰ Reminder: {h['title']}")
+
+        except FileNotFoundError:
+            print("No habits file found.")
+
 
     def task_completed(self):
         status = input(f"Did you complete '{self.title}'? (yes/no): ").lower()
@@ -106,9 +116,22 @@ class Tracker(TrackerStructure):
         except Exception as e:
             print(f"Delete error: {e}")
 
+def values_crypto():
+    key = Fernet.generate_key()
+    cipher_suite = Fernet(key)
+
+    with open('habits.json', 'r', encoding='utf-8') as f:
+        data_file = json.load(f)
+
+    data_str = json.dumps(data_file).encode('utf-8')
+    encrypted_data = cipher_suite.encrypt(data_str)
+
+    with open('encrypted_data.bin', 'wb') as f:
+        f.write(encrypted_data)
 
 if __name__ == "__main__":
     habit = Tracker()
     habit.add_habit()
     habit.task_completed()
     habit.save_to_file()
+    values_crypto()
