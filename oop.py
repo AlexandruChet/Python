@@ -11,7 +11,7 @@ class Character(ABC):
         self.dodging = False
 
     @abstractmethod
-    def attack(self, target: 'Character'):
+    def attack(self, target: "Character"):
         pass
 
     @abstractmethod
@@ -27,11 +27,13 @@ class Character(ABC):
         pass
 
     @abstractmethod
-    def random_perk(self, target: 'Character'):
+    def random_perk(self, target: "Character"):
         pass
 
     def take_damage(self, dmg):
-        self.health -= dmg
+        reduced = max(dmg - self.defense_value, 0)
+        self.health -= reduced
+        print(f"{self.name} takes {reduced} damage (defense blocked {dmg - reduced})")
 
     def add_defense(self, value):
         self.defense_value += value
@@ -56,6 +58,31 @@ class Hero(Character):
     def __init__(self):
         super().__init__(50, 100, "Hero", 100, 30)
         self.mana = 100
+        self.status = None
+
+    def apply_status(self):
+        if not self.status:
+            print("No status to apply.")
+            return
+
+        if self.status == "Poison":
+            damage = 10
+            self.take_damage(damage)
+            print(f"Hero is poisoned! Takes {damage} damage.")
+        elif self.status == "Burn":
+            damage = 15
+            self.take_damage(damage)
+            print(f"Hero is burning! Takes {damage} damage.")
+        elif self.status == "Freeze":
+            self.set_dodging(False)
+            print("Hero is frozen! Cannot dodge this turn.")
+        else:
+            print("Unknown status effect.")
+
+        self.status = None
+
+    def critical_hit(self):
+        return 2.0 if random.random() < 0.15 else 1.0
 
     def attack(self, target: Character):
         if target.is_dodging():
@@ -68,7 +95,8 @@ class Hero(Character):
             self.mana -= 10
             return
 
-        dmg = self.strength if random.random() < 0.8 else self.strength * 1.5
+        multiplier = self.critical_hit()
+        dmg = self.strength * multiplier
         target.take_damage(dmg)
         print(f"Hero deals {dmg} damage!")
 
@@ -109,6 +137,7 @@ class Hero(Character):
             self.take_damage(5)
             print("Bad luck: Hero takes 5 damage")
 
+
 class Enemy(Character):
     def __init__(self):
         super().__init__(35, 60, "Enemy", 300, 10)
@@ -148,7 +177,7 @@ class Enemy(Character):
 
     def random_perk(self, target: Character):
         random_chance = random.randint(1, 4)
-        
+
         if random_chance == 1:
             self.attack(target)
         elif random_chance == 2:
@@ -198,7 +227,7 @@ def battle():
         if enemy.get_health() > 0:
             print("\nEnemy's turn...")
             action = random.randint(1, 4)
-
+            
             if action == 1:
                 enemy.attack(hero)
             elif action == 2:
@@ -207,7 +236,6 @@ def battle():
                 enemy.recovery()
             elif action == 4:
                 enemy.use_miss()
-
         turn += 1
 
     print("\n=== BATTLE OVER ===")
