@@ -10,7 +10,8 @@ from docx2pdf import convert
 class Files:
     def __init__(self, file_path: str):
         self.file = Path(file_path)
-        if not self.file.exists():  raise FileNotFoundError(f"{self.file} not found")
+        if not self.file.exists():
+            raise FileNotFoundError(f"{self.file} not found")
 
     def exists(self) -> bool:
         return self.file.exists()
@@ -86,4 +87,5 @@ class Files:
             h.update(f.read())
         return h.hexdigest()
 
-    def is_same(self, other_file):  return self.hash() == Files(other_file).hash()
+    def is_same(self, other_file):
+        return self.hash() == Files(other_file).hash()
