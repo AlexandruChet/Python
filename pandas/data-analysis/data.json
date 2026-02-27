@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Alice Smith",
+    "email": "alice@example.com",
+    "registration_date": "2025-02-20",
+    "preferences": {"language": "en", "theme": "dark"},
+    "height": 165,
+    "weight": 55,
+    "birth_date": "2010-03-15"
+  },
+  {
+    "name": "Bob Johnson",
+    "email": "bob@example.com",
+    "registration_date": "2024-01-15",
+    "preferences": {"language": "de", "theme": "light"},
+    "height": 172,
+    "weight": 68,
+    "birth_date": "2009-06-22"
+  }
+]
